@@ -4,8 +4,9 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "dev": "nodemon ./src/main.ts",
     "test": "jest",
-    "test:watch": "jest --watch"
+    "test:watch": "jest --watch --forceExit"
   },
   "author": "",
   "license": "ISC",
