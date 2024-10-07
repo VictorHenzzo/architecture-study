@@ -1,7 +1,4 @@
-import crypto from "crypto";
-import AccountDAO from "./account_dao";
-
-function isValidCpf(cpf: string) {
+export function isValidCpf(cpf: string) {
     if (!cpf) return false;
     cpf = sanitizeCpf(cpf)
     if (cpfHasInvalidLenght(cpf)) return false;
@@ -35,4 +32,3 @@ function calculateDigit(cpf: string, factor: number) {
 function extractActualCheckDigit(cpf: string) {
     return cpf.slice(9);
 }
-
