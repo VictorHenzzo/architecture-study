@@ -1,6 +1,7 @@
 import crypto from "crypto";
 import pgp from "pg-promise";
 import express, { Request, Response } from "express";
+import AccountDAO from "./account_dao";
 
 const app = express();
 app.use(express.json())
@@ -66,24 +67,18 @@ function extractActualCheckDigit(cpf: string) {
 }
 
 export async function signup(input: any): Promise<any> {
-    const connection = pgp()("postgres://postgres:password@localhost:5432/mydb");
-
-    try {
-        const accountId = crypto.randomUUID();
-        const [account] = await connection.query("select * from cccat14.account where email = $1", [input.email]);
-        if (account) throw new Error("Duplicated account");
-        if (isInvalidName(input.name)) throw new Error("Invalid name");
-        if (isInvalidEmail(input.email)) throw new Error("Invalid email");
-        if (!isValidCpf(input.cpf)) throw new Error("Invalid cpf");
-        if (input.isDriver && isInvalidCarPlate(input.carPlate)) throw new Error("Invalid carplate");
-        await connection.query("insert into cccat14.account (account_id, name, email, cpf, car_plate, is_passenger, is_driver) values ($1, $2, $3, $4, $5, $6, $7)", [accountId, input.name, input.email, input.cpf, input.carPlate, !!input.isPassenger, !!input.isDriver]);
-        return {
-            accountId
-        };
-    }
-    finally {
-        await connection.$pool.end();
-    }
+    const accountDao = new AccountDAO();
+    input.accountId = crypto.randomUUID();
+    const [account] = await accountDao.getByEmail(input.email)
+    if (account) throw new Error("Duplicated account");
+    if (isInvalidName(input.name)) throw new Error("Invalid name");
+    if (isInvalidEmail(input.email)) throw new Error("Invalid email");
+    if (!isValidCpf(input.cpf)) throw new Error("Invalid cpf");
+    if (input.isDriver && isInvalidCarPlate(input.carPlate)) throw new Error("Invalid carplate");
+    await accountDao.save(input)
+    return {
+        accountId: input.accountId
+    };
 }
 
 function isInvalidName(name: string) {
@@ -99,8 +94,7 @@ function isInvalidCarPlate(carPlate: string) {
 }
 
 export async function getAccount(accountId: string) {
-    const connection = pgp()("postgres://postgres:password@localhost:5432/mydb");
-    const [account] = await connection.query("select * from cccat14.account where account_id = $1", [accountId]);
-    await connection.$pool.end();
+    const accountDao = new AccountDAO();
+    const account = await accountDao.getById(accountId);
     return account;
 }
