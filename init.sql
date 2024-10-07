@@ -1,5 +1,3 @@
-drop schema cccat14 cascade;
-
 create schema cccat14;
 
 create table cccat14.account (

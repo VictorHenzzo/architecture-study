@@ -15,9 +15,13 @@ app.post("/signup", async function (req: Request, res: Response) {
 })
 
 app.get("/account/:accountId", async function (req: Request, res: Response) {
-    const accountId = req.params.accountId;
-    const output = await getAccount(accountId);
-    res.json(output);
+    try {
+        const accountId = req.params.accountId;
+        const output = await getAccount(accountId);
+        res.json(output);
+    } catch {
+
+    }
 })
 
 if (process.env.NODE_ENV !== 'test') {
@@ -62,7 +66,7 @@ function extractActualCheckDigit(cpf: string) {
 }
 
 export async function signup(input: any): Promise<any> {
-    const connection = pgp()("postgres://postgres:zxc@localhost:2022/app");
+    const connection = pgp()("postgres://postgres:password@localhost:5432/mydb");
 
     try {
         const accountId = crypto.randomUUID();
@@ -95,7 +99,7 @@ function isInvalidCarPlate(carPlate: string) {
 }
 
 export async function getAccount(accountId: string) {
-    const connection = pgp()("postgres://postgres:zxc@localhost:2022/app");
+    const connection = pgp()("postgres://postgres:password@localhost:5432/mydb");
     const [account] = await connection.query("select * from cccat14.account where account_id = $1", [accountId]);
     await connection.$pool.end();
     return account;
